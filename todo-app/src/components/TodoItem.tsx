@@ -3,8 +3,8 @@ import Button from './Button';
 
 interface TodoItemProps {
   todo: Todo;
-  onToggle: (id: string) => void;
-  onDelete: (id: string) => void;
+  onToggle: (todoId: string) => void;
+  onDelete: (todoId: string) => void;
 }
 
 export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
@@ -19,7 +19,7 @@ export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
           <input
             type="checkbox"
             checked={todo.completed}
-            onChange={() => onToggle(todo.id)}
+            onChange={() => onToggle(todo.todoId)}
             className="w-5 h-5 text-blue-600 bg-white/80 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:ring-2 transition-all duration-200 hover:scale-110"
           />
           {todo.completed && (
@@ -36,11 +36,11 @@ export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
               : 'text-gray-800 font-medium'
           }`}
         >
-          {todo.text}
+          {todo.todoName}
         </span>
         
         <Button
-          onClick={() => onDelete(todo.id)}
+          onClick={() => onDelete(todo.todoId)}
           variant="danger"
           className="opacity-0 group-hover:opacity-100"
         >
