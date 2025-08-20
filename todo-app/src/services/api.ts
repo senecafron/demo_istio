@@ -7,6 +7,8 @@ import {
   SetUserEmailRequest,
   GetTodosRequest,
   GetTodosResponse,
+  CopyTodoListRequest,
+  CopyTodoListResponse,
 } from '@/types/todo';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -87,6 +89,13 @@ export const todoApi = {
     const params = new URLSearchParams({ userEmail: request.userEmail });
     return apiRequest(`/get-todo-items?${params}`, {
       method: 'GET',
+    });
+  },
+
+  async copyTodoList(request: CopyTodoListRequest): Promise<CopyTodoListResponse> {
+    return apiRequest('/copy-todo-list', {
+      method: 'POST',
+      body: JSON.stringify(request),
     });
   },
 };

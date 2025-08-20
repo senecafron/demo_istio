@@ -4,6 +4,7 @@ import { useState } from 'react';
 import TodoItem from '@/components/TodoItem';
 import AddTodoForm from '@/components/AddTodoForm';
 import UserSetup from '@/components/UserSetup';
+import CopyTodoList from '@/components/CopyTodoList';
 import { Todo, User } from '@/types/todo';
 import { todoApi, ApiError } from '@/services/api';
 
@@ -11,10 +12,40 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showCopyModal, setShowCopyModal] = useState(false);
 
   const handleUserReady = (newUser: User, userTodos: Todo[]) => {
     setUser(newUser);
-    setTodos(userTodos);
+    // Filter out deleted todos
+    const activeTodos = userTodos.filter(todo => 
+      !todo.todoName.includes('[DELETED]')
+    );
+    setTodos(activeTodos);
+  };
+
+  const refreshTodos = async () => {
+    if (!user || !user.email) return;
+    
+    setError(null);
+    try {
+      const response = await todoApi.getTodos({ userEmail: user.email });
+      // Filter out deleted todos
+      const activeTodos = response.todos.filter(todo => 
+        !todo.todoName.includes('[DELETED]')
+      );
+      setTodos(activeTodos);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('Failed to refresh todos');
+      }
+    }
+  };
+
+  const handleCopyComplete = () => {
+    setShowCopyModal(false);
+    refreshTodos();
   };
 
   const addTodo = async (todoName: string) => {
@@ -88,8 +119,17 @@ export default function Home() {
             <h1 className="text-4xl font-bold text-white text-center drop-shadow-lg bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
               Todo List
             </h1>
-            <div className="text-white/80 text-sm">
-              {user.email}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowCopyModal(true)}
+                className="px-3 py-2 bg-white/20 backdrop-blur-sm text-white/90 rounded-xl shadow-md hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-200 text-sm font-medium"
+                title="Copy todos from another user"
+              >
+                📋 Copy from User
+              </button>
+              <div className="text-white/80 text-sm">
+                {user.email}
+              </div>
             </div>
           </div>
           
@@ -123,6 +163,14 @@ export default function Home() {
           </div>
         </div>
       </div>
+      
+      {showCopyModal && (
+        <CopyTodoList
+          currentUser={user}
+          onCopyComplete={handleCopyComplete}
+          onClose={() => setShowCopyModal(false)}
+        />
+      )}
     </div>
   );
 }

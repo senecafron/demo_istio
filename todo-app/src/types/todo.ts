@@ -41,3 +41,13 @@ export interface GetTodosResponse {
   userEmail: string;
   todos: Todo[];
 }
+
+export interface CopyTodoListRequest {
+  source: string;
+  target: string;
+}
+
+export interface CopyTodoListResponse {
+  message: string;
+  copiedCount?: number;
+}
