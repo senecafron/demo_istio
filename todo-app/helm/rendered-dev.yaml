@@ -1,0 +1,91 @@
+---
+# Source: frontend-chart/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-chart-config-dev
+  labels:
+    app: frontend-chart
+    environment: dev
+data:
+  NEXT_PUBLIC_API_URL: "http://backend1-service-dev:3001/api"
+  NEXT_TELEMETRY_DISABLED: "1"
+  NODE_ENV: "development"
+  PORT: "3000"
+---
+# Source: frontend-chart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-chart-service-dev
+  labels:
+    app: frontend-chart
+    environment: dev
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: frontend-chart
+    environment: dev
+---
+# Source: frontend-chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-chart-dev
+  labels:
+    app: frontend-chart
+    environment: dev
+    version: 1.0.0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-chart
+      environment: dev
+  template:
+    metadata:
+      labels:
+        app: frontend-chart
+        environment: dev
+        version: 1.0.0
+    spec:
+      containers:
+      - name: frontend-chart
+        image: "frontend-todo-app:latest"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://backend1-service-dev:3001/api"
+        - name: NEXT_TELEMETRY_DISABLED
+          value: "1"
+        - name: NODE_ENV
+          value: "development"
+        - name: PORT
+          value: "3000"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5

@@ -1,0 +1,56 @@
+# Dev environment configuration
+environment: dev
+
+replicaCount: 1
+
+image:
+  repository: frontend-todo-app
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+# Environment variables for the application
+env:
+  PORT: "3000"
+  NODE_ENV: "development"
+  
+  # Backend API URL
+  NEXT_PUBLIC_API_URL: "http://backend1-service-dev:3001/api"
+  
+  # Next.js specific
+  NEXT_TELEMETRY_DISABLED: "1"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Ingress configuration for external access
+ingress:
+  enabled: true
+  className: "nginx"  # or "istio" if using Istio ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"  # For SSL certificates
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  hosts:
+    - host: demo_istio_frontend.dev.fronseneca.dev
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+      - demo_istio_frontend.dev.fronseneca.dev
+      secretName: frontend-dev-tls
